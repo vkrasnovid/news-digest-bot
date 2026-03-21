@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 
 from bot.config import BOT_TOKEN
 from bot.handlers import start, rates, stocks, news, digest, subscription
+from bot.middlewares.throttling import ThrottlingMiddleware
 from bot.scheduler.jobs import setup_scheduler
 from bot.clients import close_session
 
@@ -24,6 +25,7 @@ async def main() -> None:
     # BUG-001/010/013: Use HTML parse mode globally instead of Markdown
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
+    dp.message.middleware(ThrottlingMiddleware())
 
     dp.include_routers(
         start.router,

@@ -1,8 +1,11 @@
 import asyncio
+import logging
 
 from bot.clients import rss_client
 from bot.config import RSS_WORLD, RSS_RUSSIA, RSS_SARATOV
 from bot.utils.formatting import escape_html_text
+
+logger = logging.getLogger(__name__)
 
 
 def _format_entries(
@@ -40,10 +43,13 @@ async def get_news() -> tuple[str, str]:
 
     # Normalize exceptions to None
     if isinstance(world_entries, Exception):
+        logger.error("World news fetch failed: %s", world_entries, exc_info=world_entries)
         world_entries = None
     if isinstance(russia_entries, Exception):
+        logger.error("Russia news fetch failed: %s", russia_entries, exc_info=russia_entries)
         russia_entries = None
     if isinstance(saratov_entries, Exception):
+        logger.error("Saratov news fetch failed: %s", saratov_entries, exc_info=saratov_entries)
         saratov_entries = None
 
     # BUG-015: Shared deduplication set across all categories

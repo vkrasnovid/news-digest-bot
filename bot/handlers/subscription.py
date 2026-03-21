@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import tempfile
 
 from aiogram import Router
 from aiogram.types import Message
@@ -37,10 +38,17 @@ def _load_subscribers() -> None:
 
 
 def _save_subscribers() -> None:
-    """Persist current subscribers to JSON file."""
+    """Persist current subscribers to JSON file atomically."""
     try:
-        with open(SUBSCRIBERS_FILE, "w") as f:
-            json.dump(sorted(_subscribed_chats), f)
+        dir_name = os.path.dirname(os.path.abspath(SUBSCRIBERS_FILE))
+        fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w") as f:
+                json.dump(sorted(_subscribed_chats), f)
+            os.replace(tmp_path, SUBSCRIBERS_FILE)
+        except BaseException:
+            os.unlink(tmp_path)
+            raise
     except Exception as e:
         logger.error("Failed to save subscribers: %s", e)
 

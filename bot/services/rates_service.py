@@ -1,7 +1,10 @@
 import asyncio
+import logging
 
 from bot.clients import cbr_client, moex_client
 from bot.config import CURRENCIES
+
+logger = logging.getLogger(__name__)
 
 
 def _arrow(diff: float) -> str:
@@ -35,6 +38,8 @@ async def get_rates() -> str:
             diff = current - previous
             lines.append(f"{_arrow(diff)} {code}/RUB: {current:.2f} ({diff:+.2f})")
     else:
+        if isinstance(valutes, Exception):
+            logger.error("CBR rates fetch failed: %s", valutes, exc_info=valutes)
         lines.append("⚠️ Данные ЦБ временно недоступны")
 
     # Gold
@@ -45,6 +50,8 @@ async def get_rates() -> str:
         lines.append("🥇 <b>Золото (XAU/RUB)</b>")
         lines.append(f"{_arrow(change)} {price:.2f} ₽/г ({change:+.2f})")
     else:
+        if isinstance(gold, Exception):
+            logger.error("Gold price fetch failed: %s", gold, exc_info=gold)
         lines.append("🥇 <b>Золото (XAU/RUB)</b>")
         lines.append("⚠️ Данные временно недоступны")
 

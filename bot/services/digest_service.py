@@ -28,11 +28,15 @@ async def build_digest() -> list[str]:
     if isinstance(rates, str):
         block1_parts.append(rates)
     else:
+        if isinstance(rates, Exception):
+            logger.error("Rates service failed: %s", rates, exc_info=rates)
         block1_parts.append("💱 Курсы валют: ⚠️ ошибка загрузки")
         error_count += 1
     if isinstance(stocks, str):
         block1_parts.append(stocks)
     else:
+        if isinstance(stocks, Exception):
+            logger.error("Stocks service failed: %s", stocks, exc_info=stocks)
         block1_parts.append("📊 Акции: ⚠️ ошибка загрузки")
         error_count += 1
     messages.append("\n\n".join(block1_parts))
@@ -43,6 +47,8 @@ async def build_digest() -> list[str]:
         messages.append(world_russia)
         messages.append(saratov)
     else:
+        if isinstance(news, Exception):
+            logger.error("News service failed: %s", news, exc_info=news)
         messages.append("📰 Новости: ⚠️ ошибка загрузки")
         error_count += 1
 

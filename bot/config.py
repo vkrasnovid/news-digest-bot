@@ -9,10 +9,9 @@ logger = logging.getLogger(__name__)
 BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
 
 # BUG-007: Validate CHAT_ID on startup
-_chat_id_raw = os.getenv("CHAT_ID", "210706056").strip()
+_chat_id_raw = os.getenv("CHAT_ID", "").strip()
 if not _chat_id_raw:
-    _chat_id_raw = "210706056"
-    logger.warning("CHAT_ID is empty, falling back to default: %s", _chat_id_raw)
+    raise RuntimeError("CHAT_ID environment variable is required")
 try:
     CHAT_ID: int = int(_chat_id_raw)
 except ValueError:
