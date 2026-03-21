@@ -2,23 +2,28 @@ import asyncio
 
 from bot.clients import rss_client
 from bot.config import RSS_WORLD, RSS_RUSSIA, RSS_SARATOV
+from bot.utils.formatting import escape_html_text
 
 
-def _format_entries(entries: list[dict] | None, limit: int) -> list[str]:
-    """Format RSS entries into numbered list with links."""
+def _format_entries(
+    entries: list[dict] | None, limit: int, seen_titles: set[str]
+) -> list[str]:
+    """Format RSS entries into numbered list with HTML links.
+
+    BUG-001/006: Use HTML <a> tags instead of Markdown links.
+    BUG-015: Accept shared seen_titles set for cross-category dedup.
+    """
     if not entries:
         return ["⚠️ Не удалось загрузить"]
     lines = []
-    seen_titles: set[str] = set()
     for entry in entries:
         title = entry["title"]
-        # Simple deduplication by normalized title
         normalized = title.lower().strip()
         if normalized in seen_titles:
             continue
         seen_titles.add(normalized)
         link = entry["link"]
-        lines.append(f"• [{title}]({link})")
+        lines.append(f'• <a href="{escape_html_text(link)}">{escape_html_text(title)}</a>')
         if len(lines) >= limit:
             break
     return lines if lines else ["Нет новостей"]
@@ -41,15 +46,18 @@ async def get_news() -> tuple[str, str]:
     if isinstance(saratov_entries, Exception):
         saratov_entries = None
 
+    # BUG-015: Shared deduplication set across all categories
+    seen_titles: set[str] = set()
+
     # Block 2: World + Russia
-    block2_lines = ["🌍 *Мир*\n"]
-    block2_lines.extend(_format_entries(world_entries, 5))
-    block2_lines.append("\n🇷🇺 *Россия*\n")
-    block2_lines.extend(_format_entries(russia_entries, 5))
+    block2_lines = ["🌍 <b>Мир</b>\n"]
+    block2_lines.extend(_format_entries(world_entries, 5, seen_titles))
+    block2_lines.append("\n🇷🇺 <b>Россия</b>\n")
+    block2_lines.extend(_format_entries(russia_entries, 5, seen_titles))
 
     # Block 3: Saratov
-    block3_lines = ["🏙 *Саратов*\n"]
-    block3_lines.extend(_format_entries(saratov_entries, 3))
+    block3_lines = ["🏙 <b>Саратов</b>\n"]
+    block3_lines.extend(_format_entries(saratov_entries, 3, seen_titles))
 
     return "\n".join(block2_lines), "\n".join(block3_lines)
 

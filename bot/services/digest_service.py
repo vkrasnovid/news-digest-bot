@@ -21,11 +21,20 @@ async def build_digest() -> list[str]:
     )
 
     messages = []
+    error_count = 0
 
     # Block 1: Currencies + Stocks
     block1_parts = []
-    block1_parts.append(rates if isinstance(rates, str) else "💱 Курсы валют: ⚠️ ошибка загрузки")
-    block1_parts.append(stocks if isinstance(stocks, str) else "📊 Акции: ⚠️ ошибка загрузки")
+    if isinstance(rates, str):
+        block1_parts.append(rates)
+    else:
+        block1_parts.append("💱 Курсы валют: ⚠️ ошибка загрузки")
+        error_count += 1
+    if isinstance(stocks, str):
+        block1_parts.append(stocks)
+    else:
+        block1_parts.append("📊 Акции: ⚠️ ошибка загрузки")
+        error_count += 1
     messages.append("\n\n".join(block1_parts))
 
     # Block 2 & 3: News
@@ -35,5 +44,12 @@ async def build_digest() -> list[str]:
         messages.append(saratov)
     else:
         messages.append("📰 Новости: ⚠️ ошибка загрузки")
+        error_count += 1
+
+    # BUG-014: Log warning when all data sources failed
+    if error_count == 3:
+        logger.warning("Digest contains only errors — all API calls failed")
+    elif error_count > 0:
+        logger.warning("Digest partially degraded — %d of 3 data sources failed", error_count)
 
     return messages

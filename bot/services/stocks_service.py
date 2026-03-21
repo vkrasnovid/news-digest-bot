@@ -1,5 +1,6 @@
 from bot.clients import moex_client
 from bot.config import TICKERS, TICKER_NAMES
+from bot.utils.formatting import escape_html_text
 
 
 def _arrow(val: float | None) -> str:
@@ -17,9 +18,9 @@ async def get_stocks() -> str:
     data = await moex_client.fetch_stocks()
 
     if data is None:
-        return "📊 *Акции MOEX*\n⚠️ Данные временно недоступны"
+        return "📊 <b>Акции MOEX</b>\n⚠️ Данные временно недоступны"
 
-    lines = ["📊 *Акции MOEX*\n"]
+    lines = ["📊 <b>Акции MOEX</b>\n"]
 
     # Index by SECID for ordered output
     by_ticker = {item["SECID"]: item for item in data}
@@ -30,12 +31,12 @@ async def get_stocks() -> str:
             continue
         price = item.get("LAST", 0)
         change_pct = item.get("LASTTOPREVPRICE")
-        change_abs = item.get("CHANGE")
-        name = TICKER_NAMES.get(ticker, ticker)
+        name = escape_html_text(TICKER_NAMES.get(ticker, ticker))
 
         pct_str = f"{change_pct:+.2f}%" if change_pct is not None else "н/д"
-        abs_str = f"{change_abs:+.2f}" if change_abs is not None else ""
 
-        lines.append(f"{_arrow(change_pct)} *{ticker}* ({name}): {price:.2f} ₽ ({pct_str})")
+        lines.append(
+            f"{_arrow(change_pct)} <b>{escape_html_text(ticker)}</b> ({name}): {price:.2f} ₽ ({pct_str})"
+        )
 
     return "\n".join(lines)

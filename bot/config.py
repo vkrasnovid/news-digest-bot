@@ -1,10 +1,22 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
-CHAT_ID: int = int(os.getenv("CHAT_ID", "210706056"))
+
+# BUG-007: Validate CHAT_ID on startup
+_chat_id_raw = os.getenv("CHAT_ID", "210706056").strip()
+if not _chat_id_raw:
+    _chat_id_raw = "210706056"
+    logger.warning("CHAT_ID is empty, falling back to default: %s", _chat_id_raw)
+try:
+    CHAT_ID: int = int(_chat_id_raw)
+except ValueError:
+    raise RuntimeError(f"CHAT_ID must be an integer, got: {_chat_id_raw!r}")
 
 # Currency pairs to display
 CURRENCIES: list[str] = ["USD", "EUR", "CNY"]
@@ -42,3 +54,6 @@ TIMEZONE: str = "Europe/Moscow"
 
 # HTTP timeout in seconds
 HTTP_TIMEOUT: int = 10
+
+# Subscribers persistence file
+SUBSCRIBERS_FILE: str = os.getenv("SUBSCRIBERS_FILE", "subscribers.json")

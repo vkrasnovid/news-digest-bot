@@ -20,7 +20,7 @@ async def get_rates() -> str:
         return_exceptions=True,
     )
 
-    lines = ["💱 *Курсы валют ЦБ РФ*\n"]
+    lines = ["💱 <b>Курсы валют ЦБ РФ</b>\n"]
 
     # Currency rates
     if isinstance(valutes, dict):
@@ -28,8 +28,10 @@ async def get_rates() -> str:
             v = valutes.get(code)
             if not v:
                 continue
-            current = v["Value"]
-            previous = v["Previous"]
+            current = v.get("Value")
+            previous = v.get("Previous")
+            if current is None or previous is None:
+                continue
             diff = current - previous
             lines.append(f"{_arrow(diff)} {code}/RUB: {current:.2f} ({diff:+.2f})")
     else:
@@ -40,10 +42,10 @@ async def get_rates() -> str:
     if isinstance(gold, dict) and gold.get("LAST") is not None:
         price = gold["LAST"]
         change = gold.get("CHANGE") or 0
-        lines.append(f"🥇 *Золото (XAU/RUB)*")
+        lines.append("🥇 <b>Золото (XAU/RUB)</b>")
         lines.append(f"{_arrow(change)} {price:.2f} ₽/г ({change:+.2f})")
     else:
-        lines.append("🥇 *Золото (XAU/RUB)*")
+        lines.append("🥇 <b>Золото (XAU/RUB)</b>")
         lines.append("⚠️ Данные временно недоступны")
 
     return "\n".join(lines)

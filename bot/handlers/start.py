@@ -5,7 +5,7 @@ from aiogram.filters import Command
 router = Router()
 
 WELCOME_TEXT = (
-    "👋 *Привет!*\n\n"
+    "👋 <b>Привет!</b>\n\n"
     "Я — бот новостного дайджеста. Каждый час (с 8:00 до 23:00 МСК) "
     "присылаю сводку:\n"
     "💱 Курсы валют и золото\n"
@@ -15,7 +15,7 @@ WELCOME_TEXT = (
 )
 
 HELP_TEXT = (
-    "📋 *Команды*\n\n"
+    "📋 <b>Команды</b>\n\n"
     "/start — Приветствие\n"
     "/help — Список команд\n"
     "/rates — Курсы валют + золото\n"
@@ -29,9 +29,9 @@ HELP_TEXT = (
 
 @router.message(Command("start"))
 async def cmd_start(message: Message):
-    await message.answer(WELCOME_TEXT, parse_mode="Markdown")
+    await message.answer(WELCOME_TEXT)
 
 
 @router.message(Command("help"))
 async def cmd_help(message: Message):
-    await message.answer(HELP_TEXT, parse_mode="Markdown")
+    await message.answer(HELP_TEXT)

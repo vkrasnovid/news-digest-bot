@@ -8,6 +8,7 @@ from aiogram.enums import ParseMode
 from bot.config import BOT_TOKEN
 from bot.handlers import start, rates, stocks, news, digest, subscription
 from bot.scheduler.jobs import setup_scheduler
+from bot.clients import close_session
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +21,8 @@ async def main() -> None:
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN environment variable is not set")
 
-    bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
+    # BUG-001/010/013: Use HTML parse mode globally instead of Markdown
+    bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
 
     dp.include_routers(
@@ -41,6 +43,7 @@ async def main() -> None:
         await dp.start_polling(bot)
     finally:
         scheduler.shutdown()
+        await close_session()
         await bot.session.close()
 
 

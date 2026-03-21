@@ -5,8 +5,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from bot.services import digest_service
-from bot.handlers.subscription import is_subscribed
-from bot.config import CHAT_ID, DIGEST_HOURS, DIGEST_MINUTE, TIMEZONE
+from bot.handlers.subscription import get_all_subscribers
+from bot.config import DIGEST_HOURS, DIGEST_MINUTE, TIMEZONE
+from bot.utils.formatting import split_message
 
 logger = logging.getLogger(__name__)
 
@@ -16,19 +17,26 @@ def setup_scheduler(bot: Bot) -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler()
 
     async def send_digest() -> None:
-        if not is_subscribed(CHAT_ID):
-            logger.info("Chat %s is unsubscribed, skipping digest", CHAT_ID)
+        # BUG-003: Send to ALL subscribers, not just CHAT_ID
+        subscribers = get_all_subscribers()
+        if not subscribers:
+            logger.info("No subscribers, skipping digest")
             return
 
-        logger.info("Sending scheduled digest to %s", CHAT_ID)
+        logger.info("Sending scheduled digest to %d subscriber(s)", len(subscribers))
         try:
             messages = await digest_service.build_digest()
-            for msg in messages:
-                await bot.send_message(
-                    CHAT_ID, msg, parse_mode="Markdown", disable_web_page_preview=True
-                )
+            for chat_id in subscribers:
+                try:
+                    for msg in messages:
+                        for part in split_message(msg):
+                            await bot.send_message(
+                                chat_id, part, disable_web_page_preview=True
+                            )
+                except Exception as e:
+                    logger.error("Failed to send digest to %s: %s", chat_id, e)
         except Exception as e:
-            logger.error("Failed to send digest: %s", e)
+            logger.error("Failed to build digest: %s", e)
 
     scheduler.add_job(
         send_digest,
