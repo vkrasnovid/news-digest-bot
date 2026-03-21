@@ -11,7 +11,8 @@ async def fetch_feed(url: str) -> list[dict] | None:
     """Fetch and parse an RSS feed. Returns list of entries or None on failure."""
     try:
         session = await get_session()
-        async with session.get(url) as resp:
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; NewsDigestBot/1.0)"}
+        async with session.get(url, headers=headers) as resp:
             resp.raise_for_status()
             text = await resp.text()
 

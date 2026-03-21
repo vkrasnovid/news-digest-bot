@@ -42,9 +42,11 @@ MOEX_GOLD_URL: str = (
 )
 
 # RSS feed URLs
-RSS_WORLD: str = "https://news.yandex.ru/world.rss"
-RSS_RUSSIA: str = "https://news.yandex.ru/index.rss"
-RSS_SARATOV: str = "https://news.yandex.ru/Saratov/index.rss"
+RSS_WORLD: str = "https://ria.ru/export/rss2/archive/index.xml"
+RSS_RUSSIA: str = "https://lenta.ru/rss"
+RSS_RUSSIA_2: str = "https://rssexport.rbc.ru/rbcnews/news/30/full.rss"
+RSS_SARATOV: str = "https://saratov.mk.ru/rss/"
+RSS_SARATOV_2: str = "https://nversia.ru/rss/"
 
 # Scheduler settings
 DIGEST_HOURS: str = "8-23"  # MSK hours for hourly digest

@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from bot.clients import rss_client
-from bot.config import RSS_WORLD, RSS_RUSSIA, RSS_SARATOV
+from bot.config import RSS_WORLD, RSS_RUSSIA, RSS_RUSSIA_2, RSS_SARATOV, RSS_SARATOV_2
 from bot.utils.formatting import escape_html_text
 
 logger = logging.getLogger(__name__)
@@ -34,23 +34,30 @@ def _format_entries(
 
 async def get_news() -> tuple[str, str]:
     """Fetch and format news. Returns (world+russia block, saratov block)."""
-    world_entries, russia_entries, saratov_entries = await asyncio.gather(
+    results = await asyncio.gather(
         rss_client.fetch_feed(RSS_WORLD),
         rss_client.fetch_feed(RSS_RUSSIA),
+        rss_client.fetch_feed(RSS_RUSSIA_2),
         rss_client.fetch_feed(RSS_SARATOV),
+        rss_client.fetch_feed(RSS_SARATOV_2),
         return_exceptions=True,
     )
 
     # Normalize exceptions to None
-    if isinstance(world_entries, Exception):
-        logger.error("World news fetch failed: %s", world_entries, exc_info=world_entries)
-        world_entries = None
-    if isinstance(russia_entries, Exception):
-        logger.error("Russia news fetch failed: %s", russia_entries, exc_info=russia_entries)
-        russia_entries = None
-    if isinstance(saratov_entries, Exception):
-        logger.error("Saratov news fetch failed: %s", saratov_entries, exc_info=saratov_entries)
-        saratov_entries = None
+    normalized = []
+    labels = ["World", "Russia(Lenta)", "Russia(RBC)", "Saratov(MK)", "Saratov(NVersia)"]
+    for i, r in enumerate(results):
+        if isinstance(r, Exception):
+            logger.error("%s news fetch failed: %s", labels[i], r, exc_info=r)
+            normalized.append(None)
+        else:
+            normalized.append(r)
+
+    world_entries = normalized[0]
+    # Merge Russia sources
+    russia_entries = (normalized[1] or []) + (normalized[2] or []) or None
+    # Merge Saratov sources
+    saratov_entries = (normalized[3] or []) + (normalized[4] or []) or None
 
     # BUG-015: Shared deduplication set across all categories
     seen_titles: set[str] = set()
