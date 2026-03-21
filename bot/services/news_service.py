@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from bot.clients import rss_client
-from bot.config import RSS_WORLD, RSS_RUSSIA, RSS_RUSSIA_2, RSS_SARATOV, RSS_SARATOV_2
+from bot.config import RSS_WORLD, RSS_WORLD_2, RSS_RUSSIA, RSS_RUSSIA_2, RSS_SARATOV, RSS_SARATOV_2
 from bot.utils.formatting import escape_html_text
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ async def get_news() -> tuple[str, str]:
     """Fetch and format news. Returns (world+russia block, saratov block)."""
     results = await asyncio.gather(
         rss_client.fetch_feed(RSS_WORLD),
+        rss_client.fetch_feed(RSS_WORLD_2),
         rss_client.fetch_feed(RSS_RUSSIA),
         rss_client.fetch_feed(RSS_RUSSIA_2),
         rss_client.fetch_feed(RSS_SARATOV),
@@ -45,7 +46,7 @@ async def get_news() -> tuple[str, str]:
 
     # Normalize exceptions to None
     normalized = []
-    labels = ["World", "Russia(Lenta)", "Russia(RBC)", "Saratov(MK)", "Saratov(NVersia)"]
+    labels = ["World(BBC)", "World(Meduza)", "Russia(Lenta)", "Russia(RBC)", "Saratov(MK)", "Saratov(NVersia)"]
     for i, r in enumerate(results):
         if isinstance(r, Exception):
             logger.error("%s news fetch failed: %s", labels[i], r, exc_info=r)
@@ -53,11 +54,12 @@ async def get_news() -> tuple[str, str]:
         else:
             normalized.append(r)
 
-    world_entries = normalized[0]
+    # Merge World sources (BBC Russian + Meduza)
+    world_entries = (normalized[0] or []) + (normalized[1] or []) or None
     # Merge Russia sources
-    russia_entries = (normalized[1] or []) + (normalized[2] or []) or None
+    russia_entries = (normalized[2] or []) + (normalized[3] or []) or None
     # Merge Saratov sources
-    saratov_entries = (normalized[3] or []) + (normalized[4] or []) or None
+    saratov_entries = (normalized[4] or []) + (normalized[5] or []) or None
 
     # BUG-015: Shared deduplication set across all categories
     seen_titles: set[str] = set()

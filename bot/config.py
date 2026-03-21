@@ -42,14 +42,15 @@ MOEX_GOLD_URL: str = (
 )
 
 # RSS feed URLs
-RSS_WORLD: str = "https://ria.ru/export/rss2/archive/index.xml"
+RSS_WORLD: str = "https://feeds.bbci.co.uk/russian/rss.xml"
+RSS_WORLD_2: str = "https://meduza.io/rss/all"
 RSS_RUSSIA: str = "https://lenta.ru/rss"
 RSS_RUSSIA_2: str = "https://rssexport.rbc.ru/rbcnews/news/30/full.rss"
 RSS_SARATOV: str = "https://saratov.mk.ru/rss/"
 RSS_SARATOV_2: str = "https://nversia.ru/rss/"
 
 # Scheduler settings
-DIGEST_HOURS: str = "8-23"  # MSK hours for hourly digest
+DIGEST_HOURS: str = "8,11,14,17,20,23"  # MSK hours — every 3 hours
 DIGEST_MINUTE: int = 0
 TIMEZONE: str = "Europe/Moscow"
 

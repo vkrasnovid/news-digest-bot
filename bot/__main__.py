@@ -38,7 +38,7 @@ async def main() -> None:
 
     scheduler = setup_scheduler(bot)
     scheduler.start()
-    logger.info("Scheduler started — digest every hour 8:00–23:00 MSK")
+    logger.info("Scheduler started — digest every 3h (8,11,14,17,20,23 MSK)")
 
     logger.info("Bot starting polling…")
     try:
