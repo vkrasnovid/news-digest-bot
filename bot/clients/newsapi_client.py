@@ -13,7 +13,6 @@ async def search_news(topic: str, page_size: int = 5) -> list[dict]:
     session = await get_session()
     params = {
         "q": topic,
-        "language": "ru,en",
         "sortBy": "publishedAt",
         "pageSize": page_size,
         "apiKey": NEWSAPI_KEY,
