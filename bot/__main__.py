@@ -6,7 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from bot.config import BOT_TOKEN
-from bot.handlers import start, rates, stocks, news, digest, subscription
+from bot.handlers import start, rates, stocks, news, digest, details, subscription
 from bot.middlewares.throttling import ThrottlingMiddleware
 from bot.scheduler.jobs import setup_scheduler
 from bot.clients import close_session
@@ -33,6 +33,7 @@ async def main() -> None:
         stocks.router,
         news.router,
         digest.router,
+        details.router,
         subscription.router,
     )
 

@@ -55,6 +55,8 @@ DIGEST_MINUTE: int = 0
 TIMEZONE: str = "Europe/Moscow"
 
 # HTTP timeout in seconds
+NEWSAPI_KEY: str = os.getenv("NEWSAPI_KEY", "")
+
 HTTP_TIMEOUT: int = 10
 
 # Subscribers persistence file
